@@ -21,12 +21,7 @@
 
 #define PIN_CS   17
 
-// I2C defines
-// This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-#define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
+
 
 // GPIO defines
 #define BTN_01 28
@@ -58,7 +53,9 @@ static gamepad_report_t report;
 uint8_t buttons[24];
 uint8_t array[3];
 
-int update_gpio(int i, uint8_t *string, int i1, int i2);
+int update_gpio(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx);
+int update_ioe(int expander_io_num, uint8_t *btns, int btn_idx, int bit_idx);
+
 
 int main()
 {
@@ -74,7 +71,8 @@ int main()
     // Chip select is active-low, so we'll initialise it to a driven-high state
     gpio_set_dir(PIN_CS, GPIO_OUT);
     gpio_put(PIN_CS, 1);
-    
+
+    ioExpander_init();
 
     for (int i = 0; i < 10000; i++) {
         uint8_t ok = 10;
@@ -112,7 +110,11 @@ int main()
         // updated += update_ioe(8, &report.buttons_a, 7, 7);
 
         if (updated > 0) {
-            tud_hid_report(0, &report, sizeof(report));
+            //if(tud_hid_ready())
+            //{
+            //    tud_hid_report(0, &report, sizeof(report));
+            //}
+            __breakpoint();
         }
     }
 

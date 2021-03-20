@@ -89,6 +89,7 @@ uint8_t const *tud_descriptor_device_cb(void) {
 uint8_t const desc_hid_report[] =
         {
                 WHEEL_GAMEPAD()
+                //TUD_HID_REPORT_DESC_GENERIC_INOUT(CFG_TUD_HID_BUFSIZE)
         };
 
 // Invoked when received GET HID REPORT DESCRIPTOR

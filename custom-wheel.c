@@ -125,21 +125,30 @@ int main()
     tusb_init();
 
     while (1) {
-        tud_task(); // tinyusb device task
 
-        if (toggle == 1) {
-            array[0] = 0x0;
-            array[1] = 0x1;
-            array[2] = 0x0;
-            toggle = 0;
-        } else {
-            array[0] = 0x0;
-            array[1] = 0x0;
-            array[2] = 0x0;
-            toggle = 1;
+        // buttons are right to left
+        // 8 7 6 5 4 3 2 1
+        report.buttons_a = 0;
+        // 16 15 14 13 12 11 10 9
+        report.buttons_b = 0;
+        // 24 23 22 21 20 19 18 17
+        report.buttons_c = 0;
+
+        uint8_t updated = 0;
+        updated += update_gpio(GPIO_01, &report.buttons_a, 0, 0);
+        updated += update_gpio(GPIO_02, &report.buttons_a, 1, 1);
+        updated += update_gpio(GPIO_03, &report.buttons_a, 2, 2);
+        updated += update_gpio(GPIO_04, &report.buttons_a, 3, 3);
+        updated += update_gpio(GPIO_05, &report.buttons_a, 4, 4);
+        updated += update_gpio(GPIO_06, &report.buttons_a, 5, 5);
+        updated += update_gpio(GPIO_07, &report.buttons_a, 6, 6);
+        updated += update_gpio(GPIO_08, &report.buttons_a, 7, 7);
+
+        if (updated > 0) {
+            tud_hid_report(0, &report, sizeof(report));
         }
 
-        tud_hid_report(0, array, 64);
+        tud_task(); // tinyusb device task
     }
 
     return 0;
@@ -207,6 +216,8 @@ void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uin
     // This example doesn't use multiple report and report ID
     (void) report_id;
     (void) report_type;
+    //(void) buffer;
+    //(void) bufsize;
 
     // echo back anything we received from host
     tud_hid_report(0, buffer, bufsize);

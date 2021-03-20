@@ -21,7 +21,7 @@ include(example_auto_set_url.cmake)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(custom-wheel custom-wheel.c usb_descriptors.c)
+add_executable(custom-wheel custom-wheel.c usb_descriptors.c io-expander.c)
 
 pico_set_program_name(custom-wheel "custom-wheel")
 pico_set_program_version(custom-wheel "0.1")

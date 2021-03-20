@@ -5,6 +5,7 @@
 #include "hardware/dma.h"
 #include "hardware/pio.h"
 #include "hardware/timer.h"
+#include "io-expander.h"
 
 #include "bsp/board.h"
 #include "tusb.h"
@@ -28,14 +29,14 @@
 #define I2C_SCL 9
 
 // GPIO defines
-#define GPIO_01 28
-#define GPIO_02 27
-#define GPIO_03 26
-#define GPIO_04 22
-#define GPIO_05 21
-#define GPIO_06 20
-#define GPIO_07 19
-#define GPIO_08 18
+#define BTN_01 28
+#define BTN_02 27
+#define BTN_03 26
+#define BTN_04 22
+#define BTN_05 21
+#define BTN_06 20
+#define BTN_07 19
+#define BTN_08 18
 
 int64_t alarm_callback(alarm_id_t id, void *user_data) {
     // Put your timeout handler code in here
@@ -75,45 +76,10 @@ int main()
     gpio_put(PIN_CS, 1);
     
 
-    // I2C Initialisation. Using it at 400Khz.
-    i2c_init(I2C_PORT, 400*1000);
-    
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
-
-    gpio_init(GPIO_01);
-    gpio_set_dir(GPIO_01, GPIO_IN);
-    gpio_pull_up(GPIO_01);
-
-    gpio_init(GPIO_02);
-    gpio_set_dir(GPIO_02, GPIO_IN);
-    gpio_pull_up(GPIO_02);
-
-    gpio_init(GPIO_03);
-    gpio_set_dir(GPIO_03, GPIO_IN);
-    gpio_pull_up(GPIO_03);
-
-    gpio_init(GPIO_04);
-    gpio_set_dir(GPIO_04, GPIO_IN);
-    gpio_pull_up(GPIO_04);
-
-    gpio_init(GPIO_05);
-    gpio_set_dir(GPIO_05, GPIO_IN);
-    gpio_pull_up(GPIO_05);
-
-    gpio_init(GPIO_06);
-    gpio_set_dir(GPIO_06, GPIO_IN);
-    gpio_pull_up(GPIO_06);
-
-    gpio_init(GPIO_07);
-    gpio_set_dir(GPIO_07, GPIO_IN);
-    gpio_pull_up(GPIO_07);
-
-    gpio_init(GPIO_08);
-    gpio_set_dir(GPIO_08, GPIO_IN);
-    gpio_pull_up(GPIO_08);
+    for (int i = 0; i < 10000; i++) {
+        uint8_t ok = 10;
+        sleep_ms(ok);
+    }
 
 
     // Timer example code - This example fires off the callback after 2000ms
@@ -121,10 +87,11 @@ int main()
 
     puts("Hello, world!");
 
-    board_init();
-    tusb_init();
+    //board_init();
+    //tusb_init();
 
     while (1) {
+        //tud_task(); // tinyusb device task
 
         // buttons are right to left
         // 8 7 6 5 4 3 2 1
@@ -135,28 +102,43 @@ int main()
         report.buttons_c = 0;
 
         uint8_t updated = 0;
-        updated += update_gpio(GPIO_01, &report.buttons_a, 0, 0);
-        updated += update_gpio(GPIO_02, &report.buttons_a, 1, 1);
-        updated += update_gpio(GPIO_03, &report.buttons_a, 2, 2);
-        updated += update_gpio(GPIO_04, &report.buttons_a, 3, 3);
-        updated += update_gpio(GPIO_05, &report.buttons_a, 4, 4);
-        updated += update_gpio(GPIO_06, &report.buttons_a, 5, 5);
-        updated += update_gpio(GPIO_07, &report.buttons_a, 6, 6);
-        updated += update_gpio(GPIO_08, &report.buttons_a, 7, 7);
+        updated += update_ioe(14, &report.buttons_a, 0, 0);
+        // updated += update_ioe(2, &report.buttons_a, 1, 1);
+        // updated += update_ioe(3, &report.buttons_a, 2, 2);
+        // updated += update_ioe(4, &report.buttons_a, 3, 3);
+        // updated += update_ioe(5, &report.buttons_a, 4, 4);
+        // updated += update_ioe(6, &report.buttons_a, 5, 5);
+        // updated += update_ioe(7, &report.buttons_a, 6, 6);
+        // updated += update_ioe(8, &report.buttons_a, 7, 7);
 
         if (updated > 0) {
             tud_hid_report(0, &report, sizeof(report));
         }
-
-        tud_task(); // tinyusb device task
     }
 
     return 0;
 }
 
-int update_gpio(int gpioNum, uint8_t *btns, int btn_idx, int bit_idx) {
+int update_gpio(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx) {
     uint8_t updated = 0;
-    uint8_t gpio_state = gpio_get(gpioNum);
+    uint8_t gpio_state = gpio_get(gpio_num);
+    if (gpio_state == 0) {
+        *btns |= 1 << bit_idx;
+        if (buttons[btn_idx] != 1) {
+            buttons[btn_idx] = 1;
+            updated = 1;
+        }
+    } else if (buttons[btn_idx] == 1) {
+        buttons[btn_idx] = 0;
+        updated = 1;
+    }
+
+    return updated;
+}
+
+int update_ioe(int expander_io_num, uint8_t *btns, int btn_idx, int bit_idx) {
+    uint8_t updated = 0;
+    uint8_t gpio_state = get_value(expander_io_num);
     if (gpio_state == 0) {
         *btns |= 1 << bit_idx;
         if (buttons[btn_idx] != 1) {

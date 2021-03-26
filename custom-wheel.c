@@ -11,6 +11,7 @@
 #include "bsp/board.h"
 #include "tusb.h"
 
+#include "Matrix.h"
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
@@ -140,17 +141,11 @@ int main() {
 
 
     board_init();
+    Matrix_Initialise();
 
     while (1) {
         uint8_t updated = 0;
-        updated += update_gpio(BTN_01, &report.buttons_a, 0, 0);
-        updated += update_gpio(BTN_02, &report.buttons_a, 1, 1);
-        updated += update_gpio(BTN_03, &report.buttons_a, 2, 2);
-        updated += update_gpio(BTN_04, &report.buttons_a, 3, 3);
-        updated += update_gpio(BTN_05, &report.buttons_a, 4, 4);
-        updated += update_gpio(BTN_06, &report.buttons_a, 5, 5);
-        updated += update_gpio(BTN_07, &report.buttons_a, 6, 6);
-        updated += update_gpio(BTN_08, &report.buttons_a, 7, 7);
+        Matrix_Read();
 
         updated += update_gpio(TOGGLE_01_A, &report.buttons_c, 17, 1);
         updated += update_gpio(TOGGLE_01_B, &report.buttons_c, 18, 2);

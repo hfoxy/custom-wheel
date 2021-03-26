@@ -38,27 +38,78 @@ int64_t alarm_callback(alarm_id_t id, void *user_data) {
     return 0;
 }
 
+#define ROTARY_01_A 10
+#define ROTARY_01_B 11
+#define ROTARY_01_C 12
 
-typedef struct
-{
+#define ROTARY_02_A 15
+#define ROTARY_02_B 14
+#define ROTARY_02_C 13
+
+#define ROTARY_03_A 26
+#define ROTARY_03_B 27
+#define ROTARY_03_C 28
+
+typedef struct {
     uint8_t buttons_a;
     uint8_t buttons_b;
     uint8_t buttons_c;
 } gamepad_report_t;
 
+typedef struct {
+    uint8_t gpio_a;
+    uint8_t gpio_b;
+    uint8_t btn_idx;
+    uint8_t bit_idx;
+    uint8_t *report_btn;
+} rotary_gpio_t;
 
-static gamepad_report_t report_old;
 static gamepad_report_t report;
 
 uint8_t buttons[24];
 uint8_t array[3];
 
+rotary_gpio_t rotary_gpios[29];
+uint8_t rotary_updated = 0;
+
+void handle_rotary_state_change(uint gpio, uint32_t events);
+
 int update_gpio(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx);
+
+int update_gpio_with_pressed(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx, uint8_t pressed_value);
+
 int update_ioe(int expander_io_num, uint8_t *btns, int btn_idx, int bit_idx);
 
+int update_btn(uint8_t state, uint8_t pressed_value, uint8_t *btns, int btn_idx, int bit_idx);
 
-int main()
+void core1_entry();
+
+void core1_entry()
 {
+    /* Chuck something so Core0 can continue. */
+    multicore_fifo_push_blocking(0xFFFFFFFF);
+
+    tusb_init();
+    gamepad_report_t report_local;
+    uint32_t data_received;
+    while(1)
+    {
+        tud_task();
+        if((multicore_fifo_get_status() & 0b0001) != 0)
+        {
+            data_received = multicore_fifo_pop_blocking();
+            report_local.buttons_a = (uint8_t)(data_received & 0xFF);
+            report_local.buttons_b = (uint8_t)((data_received >> 8) & 0xFF);
+            report_local.buttons_c = (uint8_t)((data_received >> 16) & 0xFF);
+            if (tud_hid_ready()) {
+                tud_hid_report(0, &report, sizeof(report));
+            }
+        }
+    }
+}
+
+
+int main() {
     stdio_init_all();
 
     /*// SPI initialisation. This example will use SPI at 1MHz.
@@ -67,64 +118,103 @@ int main()
     gpio_set_function(PIN_CS,   GPIO_FUNC_SIO);
     gpio_set_function(PIN_SCK,  GPIO_FUNC_SPI);
     gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);*/
-    
+
     // Chip select is active-low, so we'll initialise it to a driven-high state
     gpio_set_dir(PIN_CS, GPIO_OUT);
     gpio_put(PIN_CS, 1);
 
-    ioExpander_init();
+    //ioExpander_init();
 
-    for (int i = 0; i < 10000; i++) {
-        uint8_t ok = 10;
-        sleep_ms(ok);
-    }
+    //for (int i = 0; i < 10000; i++) {
+    //    uint8_t ok = 10;
+    //    sleep_ms(ok);
+    //}
 
 
     // Timer example code - This example fires off the callback after 2000ms
     add_alarm_in_ms(2000, alarm_callback, NULL, false);
 
-    puts("Hello, world!");
+    gpio_set_irq_enabled_with_callback(ROTARY_01_A, 0b1100, true, handle_rotary_state_change);
+    gpio_set_irq_enabled_with_callback(ROTARY_01_B, 0b1100, true, handle_rotary_state_change);
 
-    //board_init();
-    //tusb_init();
+    gpio_set_irq_enabled_with_callback(ROTARY_02_A, 0b1100, true, handle_rotary_state_change);
+    gpio_set_irq_enabled_with_callback(ROTARY_02_B, 0b1100, true, handle_rotary_state_change);
+
+    gpio_set_irq_enabled_with_callback(ROTARY_03_A, 0b1100, true, handle_rotary_state_change);
+    gpio_set_irq_enabled_with_callback(ROTARY_03_B, 0b1100, true, handle_rotary_state_change);
+
+    board_init();
 
     while (1) {
-        //tud_task(); // tinyusb device task
-
-        // buttons are right to left
-        // 8 7 6 5 4 3 2 1
-        report.buttons_a = 0;
-        // 16 15 14 13 12 11 10 9
-        report.buttons_b = 0;
-        // 24 23 22 21 20 19 18 17
-        report.buttons_c = 0;
-
         uint8_t updated = 0;
-        updated += update_ioe(14, &report.buttons_a, 0, 0);
-        // updated += update_ioe(2, &report.buttons_a, 1, 1);
-        // updated += update_ioe(3, &report.buttons_a, 2, 2);
-        // updated += update_ioe(4, &report.buttons_a, 3, 3);
-        // updated += update_ioe(5, &report.buttons_a, 4, 4);
-        // updated += update_ioe(6, &report.buttons_a, 5, 5);
-        // updated += update_ioe(7, &report.buttons_a, 6, 6);
-        // updated += update_ioe(8, &report.buttons_a, 7, 7);
+        updated += update_gpio(BTN_01, &report.buttons_a, 0, 0);
+        updated += update_gpio(BTN_02, &report.buttons_a, 1, 1);
+        updated += update_gpio(BTN_03, &report.buttons_a, 2, 2);
+        updated += update_gpio(BTN_04, &report.buttons_a, 3, 3);
+        updated += update_gpio(BTN_05, &report.buttons_a, 4, 4);
+        updated += update_gpio(BTN_06, &report.buttons_a, 5, 5);
+        updated += update_gpio(BTN_07, &report.buttons_a, 6, 6);
+        updated += update_gpio(BTN_08, &report.buttons_a, 7, 7);
 
-        if (updated > 0) {
-            //if(tud_hid_ready())
-            //{
-            //    tud_hid_report(0, &report, sizeof(report));
-            //}
-            __breakpoint();
+        updated += update_gpio(TOGGLE_01_A, &report.buttons_c, 17, 1);
+        updated += update_gpio(TOGGLE_01_B, &report.buttons_c, 18, 2);
+        updated += update_gpio(TOGGLE_02_A, &report.buttons_c, 19, 3);
+        updated += update_gpio(TOGGLE_02_B, &report.buttons_c, 20, 4);
+        updated += update_gpio(SHIFT_UP, &report.buttons_c, 21, 5);
+        updated += update_gpio(SHIFT_DOWN, &report.buttons_c, 22, 6);
+
+        rotary_gpio_t rotary_gpio = rotary_gpios[ROTARY_01_C];
+        updated += update_gpio_with_pressed(rotary_gpio.gpio_a, rotary_gpio.report_btn, rotary_gpio.btn_idx, rotary_gpio.bit_idx, 0);
+
+        rotary_gpio = rotary_gpios[ROTARY_02_C];
+        updated += update_gpio_with_pressed(rotary_gpio.gpio_a, rotary_gpio.report_btn, rotary_gpio.btn_idx, rotary_gpio.bit_idx, 0);
+
+        rotary_gpio = rotary_gpios[ROTARY_03_C];
+        updated += update_gpio_with_pressed(rotary_gpio.gpio_a, rotary_gpio.report_btn, rotary_gpio.btn_idx, rotary_gpio.bit_idx, 0);
+
+        if (updated > 0 || rotary_updated > 0) {
+            rotary_updated = 0;
+            uint32_t report_send;
+            report_send = (report.buttons_a) | (report.buttons_b << 8) | (report.buttons_c << 16);
+            multicore_fifo_push_blocking(report_send);
+            //__breakpoint();
         }
     }
 
     return 0;
 }
 
-int update_gpio(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx) {
+uint8_t last_a = 1;
+uint8_t last_b = 1;
+void handle_rotary_state_change(uint gpio, uint32_t events) {
+    rotary_gpio_t rotary_gpio = rotary_gpios[gpio];
+
+    rotary_gpio_t rotary_gpio_a = rotary_gpios[rotary_gpio.gpio_a];
+    rotary_gpio_t rotary_gpio_b = rotary_gpios[rotary_gpio.gpio_b];
+
+    uint8_t a = gpio_get(rotary_gpio.gpio_a);
+    uint8_t b = gpio_get(rotary_gpio.gpio_b);
+    if (a == 0 && b == 0 && last_b == 1) {
+        rotary_updated += update_btn(0, 1, rotary_gpio_a.report_btn, rotary_gpio_a.btn_idx, rotary_gpio_a.bit_idx);
+        rotary_updated += update_btn(1, 1, rotary_gpio_b.report_btn, rotary_gpio_b.btn_idx, rotary_gpio_b.bit_idx);
+    } else if (b == 0 && a == 0 && last_a == 1) {
+        rotary_updated += update_btn(1, 1, rotary_gpio_a.report_btn, rotary_gpio_a.btn_idx, rotary_gpio_a.bit_idx);
+        rotary_updated += update_btn(0, 1, rotary_gpio_b.report_btn, rotary_gpio_b.btn_idx, rotary_gpio_b.bit_idx);
+    } else if (a == 1 && b == 1) {
+        rotary_updated += update_btn(0, 1, rotary_gpio_a.report_btn, rotary_gpio_a.btn_idx, rotary_gpio_a.bit_idx);
+        rotary_updated += update_btn(0, 1, rotary_gpio_b.report_btn, rotary_gpio_b.btn_idx, rotary_gpio_b.bit_idx);
+    }
+
+    last_a = a;
+    last_b = b;
+}
+
+int update_btn(uint8_t state, uint8_t pressed_value, uint8_t *btns, int btn_idx, int bit_idx) {
+    // sets the bit to 0, effectively resetting it
+    *btns &= ~(1 << bit_idx);
+
     uint8_t updated = 0;
-    uint8_t gpio_state = gpio_get(gpio_num);
-    if (gpio_state == 0) {
+    if (state == pressed_value) {
         *btns |= 1 << bit_idx;
         if (buttons[btn_idx] != 1) {
             buttons[btn_idx] = 1;
@@ -138,21 +228,19 @@ int update_gpio(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx) {
     return updated;
 }
 
-int update_ioe(int expander_io_num, uint8_t *btns, int btn_idx, int bit_idx) {
-    uint8_t updated = 0;
-    uint8_t gpio_state = get_value(expander_io_num);
-    if (gpio_state == 0) {
-        *btns |= 1 << bit_idx;
-        if (buttons[btn_idx] != 1) {
-            buttons[btn_idx] = 1;
-            updated = 1;
-        }
-    } else if (buttons[btn_idx] == 1) {
-        buttons[btn_idx] = 0;
-        updated = 1;
-    }
+int update_gpio(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx) {
+    uint8_t gpio_state = gpio_get(gpio_num);
+    return update_btn(gpio_state, 0, btns, btn_idx, bit_idx);
+}
 
-    return updated;
+int update_gpio_with_pressed(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx, uint8_t pressed_value) {
+    uint8_t gpio_state = gpio_get(gpio_num);
+    return update_btn(gpio_state, pressed_value, btns, btn_idx, bit_idx);
+}
+
+int update_ioe(int expander_io_num, uint8_t *btns, int btn_idx, int bit_idx) {
+    uint8_t gpio_state = get_value(expander_io_num);
+    return update_btn(gpio_state, 0, btns, btn_idx, bit_idx);
 }
 
 //--------------------------------------------------------------------+

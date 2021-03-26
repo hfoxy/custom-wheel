@@ -40,6 +40,7 @@ target_link_libraries(custom-wheel
         hardware_pio
         hardware_timer
         pico_stdlib
+        pico_multicore
         tinyusb_device
         tinyusb_board
         )

@@ -6,6 +6,7 @@
 #include "hardware/pio.h"
 #include "hardware/timer.h"
 #include "io-expander.h"
+#include "pico/multicore.h"
 
 #include "bsp/board.h"
 #include "tusb.h"
@@ -24,19 +25,23 @@
 
 
 // GPIO defines
-#define BTN_01 28
-#define BTN_02 27
-#define BTN_03 26
-#define BTN_04 22
-#define BTN_05 21
-#define BTN_06 20
-#define BTN_07 19
-#define BTN_08 18
+#define BTN_01 0
+#define BTN_02 1
+#define BTN_03 2
+#define BTN_04 3
+#define BTN_05 4
+#define BTN_06 5
+#define BTN_07 6
+#define BTN_08 7
 
-int64_t alarm_callback(alarm_id_t id, void *user_data) {
-    // Put your timeout handler code in here
-    return 0;
-}
+#define TOGGLE_01_A 8
+#define TOGGLE_01_B 9
+
+#define TOGGLE_02_A 16
+#define TOGGLE_02_B 17
+
+#define SHIFT_UP 18
+#define SHIFT_DOWN 19
 
 #define ROTARY_01_A 10
 #define ROTARY_01_B 11
@@ -112,6 +117,10 @@ void core1_entry()
 int main() {
     stdio_init_all();
 
+    multicore_launch_core1(core1_entry);
+
+    multicore_fifo_pop_blocking();
+
     /*// SPI initialisation. This example will use SPI at 1MHz.
     spi_init(SPI_PORT, 1000*1000);
     gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
@@ -130,9 +139,148 @@ int main() {
     //    sleep_ms(ok);
     //}
 
+    gpio_init(BTN_01);
+    gpio_set_dir(BTN_01, GPIO_IN);
+    gpio_pull_up(BTN_01);
 
-    // Timer example code - This example fires off the callback after 2000ms
-    add_alarm_in_ms(2000, alarm_callback, NULL, false);
+    gpio_init(BTN_02);
+    gpio_set_dir(BTN_02, GPIO_IN);
+    gpio_pull_up(BTN_02);
+
+    gpio_init(BTN_03);
+    gpio_set_dir(BTN_03, GPIO_IN);
+    gpio_pull_up(BTN_03);
+
+    gpio_init(BTN_04);
+    gpio_set_dir(BTN_04, GPIO_IN);
+    gpio_pull_up(BTN_04);
+
+    gpio_init(BTN_05);
+    gpio_set_dir(BTN_05, GPIO_IN);
+    gpio_pull_up(BTN_05);
+
+    gpio_init(BTN_06);
+    gpio_set_dir(BTN_06, GPIO_IN);
+    gpio_pull_up(BTN_06);
+
+    gpio_init(BTN_07);
+    gpio_set_dir(BTN_07, GPIO_IN);
+    gpio_pull_up(BTN_07);
+
+    gpio_init(BTN_08);
+    gpio_set_dir(BTN_08, GPIO_IN);
+    gpio_pull_up(BTN_08);
+
+    gpio_init(TOGGLE_01_A);
+    gpio_set_dir(TOGGLE_01_A, GPIO_IN);
+    gpio_pull_up(TOGGLE_01_A);
+
+    gpio_init(TOGGLE_01_B);
+    gpio_set_dir(TOGGLE_01_B, GPIO_IN);
+    gpio_pull_up(TOGGLE_01_B);
+
+    gpio_init(TOGGLE_02_A);
+    gpio_set_dir(TOGGLE_02_A, GPIO_IN);
+    gpio_pull_up(TOGGLE_02_A);
+
+    gpio_init(TOGGLE_02_B);
+    gpio_set_dir(TOGGLE_02_B, GPIO_IN);
+    gpio_pull_up(TOGGLE_02_B);
+
+    gpio_init(SHIFT_UP);
+    gpio_set_dir(SHIFT_UP, GPIO_IN);
+    gpio_pull_up(SHIFT_UP);
+
+    gpio_init(SHIFT_DOWN);
+    gpio_set_dir(SHIFT_DOWN, GPIO_IN);
+    gpio_pull_up(SHIFT_DOWN);
+
+    gpio_init(ROTARY_01_A);
+    gpio_set_dir(ROTARY_01_A, GPIO_IN);
+    gpio_pull_up(ROTARY_01_A);
+
+    gpio_init(ROTARY_01_B);
+    gpio_set_dir(ROTARY_01_B, GPIO_IN);
+    gpio_pull_up(ROTARY_01_B);
+
+    gpio_init(ROTARY_01_C);
+    gpio_set_dir(ROTARY_01_C, GPIO_IN);
+    gpio_pull_up(ROTARY_01_C);
+
+    gpio_init(ROTARY_02_A);
+    gpio_set_dir(ROTARY_02_A, GPIO_IN);
+    gpio_pull_up(ROTARY_02_A);
+
+    gpio_init(ROTARY_02_B);
+    gpio_set_dir(ROTARY_02_B, GPIO_IN);
+    gpio_pull_up(ROTARY_02_B);
+
+    gpio_init(ROTARY_02_C);
+    gpio_set_dir(ROTARY_02_C, GPIO_IN);
+    gpio_pull_up(ROTARY_02_C);
+
+    gpio_init(ROTARY_03_A);
+    gpio_set_dir(ROTARY_03_A, GPIO_IN);
+    gpio_pull_up(ROTARY_03_A);
+
+    gpio_init(ROTARY_03_B);
+    gpio_set_dir(ROTARY_03_B, GPIO_IN);
+    gpio_pull_up(ROTARY_03_B);
+
+    gpio_init(ROTARY_03_C);
+    gpio_set_dir(ROTARY_03_C, GPIO_IN);
+    gpio_pull_up(ROTARY_03_C);
+
+    rotary_gpios[ROTARY_01_A].gpio_a = ROTARY_01_A;
+    rotary_gpios[ROTARY_01_A].gpio_b = ROTARY_01_B;
+    rotary_gpios[ROTARY_01_A].bit_idx = 0;
+    rotary_gpios[ROTARY_01_A].btn_idx = 8;
+    rotary_gpios[ROTARY_01_A].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_01_B].gpio_a = ROTARY_01_A;
+    rotary_gpios[ROTARY_01_B].gpio_b = ROTARY_01_B;
+    rotary_gpios[ROTARY_01_B].bit_idx = 1;
+    rotary_gpios[ROTARY_01_B].btn_idx = 9;
+    rotary_gpios[ROTARY_01_B].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_01_C].gpio_a = ROTARY_01_C;
+    rotary_gpios[ROTARY_01_C].bit_idx = 2;
+    rotary_gpios[ROTARY_01_C].btn_idx = 10;
+    rotary_gpios[ROTARY_01_C].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_02_A].gpio_a = ROTARY_02_A;
+    rotary_gpios[ROTARY_02_A].gpio_b = ROTARY_02_B;
+    rotary_gpios[ROTARY_02_A].bit_idx = 3;
+    rotary_gpios[ROTARY_02_A].btn_idx = 11;
+    rotary_gpios[ROTARY_02_A].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_02_B].gpio_a = ROTARY_02_A;
+    rotary_gpios[ROTARY_02_B].gpio_b = ROTARY_02_B;
+    rotary_gpios[ROTARY_02_B].bit_idx = 4;
+    rotary_gpios[ROTARY_02_B].btn_idx = 12;
+    rotary_gpios[ROTARY_02_B].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_02_C].gpio_a = ROTARY_02_C;
+    rotary_gpios[ROTARY_02_C].bit_idx = 5;
+    rotary_gpios[ROTARY_02_C].btn_idx = 13;
+    rotary_gpios[ROTARY_02_C].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_03_A].gpio_a = ROTARY_03_A;
+    rotary_gpios[ROTARY_03_A].gpio_b = ROTARY_03_B;
+    rotary_gpios[ROTARY_03_A].bit_idx = 6;
+    rotary_gpios[ROTARY_03_A].btn_idx = 14;
+    rotary_gpios[ROTARY_03_A].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_03_B].gpio_a = ROTARY_03_A;
+    rotary_gpios[ROTARY_03_B].gpio_b = ROTARY_03_B;
+    rotary_gpios[ROTARY_03_B].bit_idx = 7;
+    rotary_gpios[ROTARY_03_B].btn_idx = 15;
+    rotary_gpios[ROTARY_03_B].report_btn = &report.buttons_b;
+
+    rotary_gpios[ROTARY_03_C].gpio_a = ROTARY_03_C;
+    rotary_gpios[ROTARY_03_C].bit_idx = 0;
+    rotary_gpios[ROTARY_03_C].btn_idx = 16;
+    rotary_gpios[ROTARY_03_C].report_btn = &report.buttons_c;
 
     gpio_set_irq_enabled_with_callback(ROTARY_01_A, 0b1100, true, handle_rotary_state_change);
     gpio_set_irq_enabled_with_callback(ROTARY_01_B, 0b1100, true, handle_rotary_state_change);

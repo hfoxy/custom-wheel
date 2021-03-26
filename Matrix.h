@@ -5,8 +5,8 @@
 #ifndef CUSTOM_WHEEL_MATRIX_H
 #define CUSTOM_WHEEL_MATRIX_H
 
-void Matrix_Initialise(void)
-void Matrix_Read(void)
+void Matrix_Initialise(void);
+uint8_t Matrix_Read(uint8_t *destination);
 
 
 #endif //CUSTOM_WHEEL_MATRIX_H

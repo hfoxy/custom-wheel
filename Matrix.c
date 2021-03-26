@@ -15,8 +15,8 @@
 #define ROW_2 6
 #define ROW_3 7
 
-uint8_t columns[4] = {COL_0, COL_1, COL_2, COL_3};
-uint8_t rows[4] = {ROW_0, ROW_1, ROW_2, ROW_3};
+static const uint8_t columns[4] = {COL_0, COL_1, COL_2, COL_3};
+static const uint8_t rows[4] = {ROW_0, ROW_1, ROW_2, ROW_3};
 
 static void ConfigureColumns(void)
 {
@@ -54,22 +54,22 @@ void Matrix_Initialise(void)
     ConfigureRows();
 }
 
-void Matrix_Read(void)
+uint8_t Matrix_Read(uint8_t *destination)
 {
-    uint8_t col0, col1, col2, col3;
     gpio_put(rows[0], true);
-    col0 = ReadColumn();
+    *destination = ReadColumn();
     gpio_put(rows[0], false);
 
     gpio_put(rows[1], true);
-    col1 = ReadColumn();
+    *destination = ReadColumn() << 4;
     gpio_put(rows[1], false);
 
     gpio_put(rows[2], true);
-    col2 = ReadColumn();
+    destination[1] = ReadColumn();
     gpio_put(rows[2], false);
 
     gpio_put(rows[3], true);
-    col3 = ReadColumn();
+    destination[1] = ReadColumn() << 4;
     gpio_put(rows[3], false);
+    return 1;
 }

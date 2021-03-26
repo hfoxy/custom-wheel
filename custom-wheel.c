@@ -145,7 +145,7 @@ int main() {
 
     while (1) {
         uint8_t updated = 0;
-        Matrix_Read();
+        updated = Matrix_Read(&report.buttons_a);
 
         updated += update_gpio(TOGGLE_01_A, &report.buttons_c, 17, 1);
         updated += update_gpio(TOGGLE_01_B, &report.buttons_c, 18, 2);

@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # initalize pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
-set(PICO_SDK_PATH "C:/Users/harry/Documents/Development/Home/pico-sdk")
+# set(PICO_SDK_PATH "C:/Users/harry/Documents/Development/Home/pico-sdk")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -21,7 +21,7 @@ include(example_auto_set_url.cmake)
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(custom-wheel custom-wheel.c usb_descriptors.c io-expander.c)
+add_executable(custom-wheel custom-wheel.c usb_descriptors.c button_input.c button_input.h rotary_input.c rotary_input.h button_assignments.h)
 
 pico_set_program_name(custom-wheel "custom-wheel")
 pico_set_program_version(custom-wheel "0.1")

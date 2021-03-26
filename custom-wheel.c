@@ -5,11 +5,12 @@
 #include "hardware/dma.h"
 #include "hardware/pio.h"
 #include "hardware/timer.h"
-#include "io-expander.h"
 #include "pico/multicore.h"
 
 #include "bsp/board.h"
 #include "tusb.h"
+
+#include "button_input.h"
 
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
@@ -384,11 +385,6 @@ int update_gpio(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx) {
 int update_gpio_with_pressed(int gpio_num, uint8_t *btns, int btn_idx, int bit_idx, uint8_t pressed_value) {
     uint8_t gpio_state = gpio_get(gpio_num);
     return update_btn(gpio_state, pressed_value, btns, btn_idx, bit_idx);
-}
-
-int update_ioe(int expander_io_num, uint8_t *btns, int btn_idx, int bit_idx) {
-    uint8_t gpio_state = get_value(expander_io_num);
-    return update_btn(gpio_state, 0, btns, btn_idx, bit_idx);
 }
 
 //--------------------------------------------------------------------+

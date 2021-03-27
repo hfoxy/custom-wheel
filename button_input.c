@@ -6,32 +6,24 @@
 
 #include "button_input.h"
 
-#define BUTTON_COUNT 23
+#define BUTTON_COUNT 15
 
 uint8_t button_config[BUTTON_COUNT] = {
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
+        0,  /* button_0 */
+        1,  /* button_1 */
+        2,  /* button_2 */
+        3,  /* button_3 */
+        4,  /* button_4 */
+        5,  /* button_5 */
+        6,  /* button_6 */
+        7,  /* button_7 */
+        8,  /* momentary_0_A */
+        9,  /* momentary_0_B */
+        10, /* momentary_1_A */
+        11, /* momentary_1_B */
+        12, /* rotary_button_0 */
+        13, /* rotary_button_1 */
+        14, /* rotary_button_2 */
 };
 
 void button_input_init(void)

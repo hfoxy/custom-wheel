@@ -104,12 +104,12 @@ void core1_entry()
         tud_task();
         if((multicore_fifo_get_status() & 0b0001) != 0)
         {
-            data_received = multicore_fifo_pop_blocking();
+            multicore_fifo_pop_timeout_us(10000, &data_received);
             report_local.buttons_a = (uint8_t)(data_received & 0xFF);
             report_local.buttons_b = (uint8_t)((data_received >> 8) & 0xFF);
             report_local.buttons_c = (uint8_t)((data_received >> 16) & 0xFF);
             if (tud_hid_ready()) {
-                tud_hid_report(0, &report, sizeof(report));
+                tud_hid_report(0, &report_local, sizeof(report));
             }
         }
     }
@@ -131,8 +131,8 @@ int main() {
     gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);*/
 
     // Chip select is active-low, so we'll initialise it to a driven-high state
-    gpio_set_dir(PIN_CS, GPIO_OUT);
-    gpio_put(PIN_CS, 1);
+    //gpio_set_dir(PIN_CS, GPIO_OUT);
+    //gpio_put(PIN_CS, 1);
 
     //ioExpander_init();
 
@@ -143,14 +143,16 @@ int main() {
 
     board_init();
     button_input_init();
-    rotary_input_init();
+    //rotary_input_init();
 
     uint32_t last_button_state;
-    uint32_t button_state;
+    uint32_t button_state = 0xFF;
+    uint64_t time_since = time_us_64();
 
     while (1)
     {
-        int8_t rotary_data[3];
+        //int8_t rotary_data[3];
+        /*
         if(rotary_input_check() != 0)
         {
             rotary_input_read(rotary_data);
@@ -178,14 +180,14 @@ int main() {
             {
                 button_state |= ( 1 << rotary_2_ccw);
             }
-        }
+        }*/
 
         /* Read the state of the buttons. */
-        button_state = (button_state & ~0x00003FFF) | button_input_read_all();
+        button_state = button_input_read_all();
 
         if(last_button_state != button_state)
         {
-            multicore_fifo_push_blocking(button_state);
+            multicore_fifo_push_timeout_us(button_state,10000);
         }
         last_button_state = button_state;
     }

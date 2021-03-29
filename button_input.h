@@ -5,8 +5,15 @@
 #ifndef CUSTOM_WHEEL_BUTTON_INPUT_H
 #define CUSTOM_WHEEL_BUTTON_INPUT_H
 
+typedef struct{
+    uint8_t bit_index;
+    uint8_t gpio_num;
+}button_t;
+
+
 void button_input_init(void);
 uint8_t button_input_read(uint8_t button_index);
 uint32_t button_input_read_all(void);
+
 
 #endif //CUSTOM_WHEEL_BUTTON_INPUT_H

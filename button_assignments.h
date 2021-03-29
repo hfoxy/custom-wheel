@@ -5,7 +5,7 @@
 #ifndef CUSTOM_WHEEL_BUTTON_ASSIGNMENTS_H
 #define CUSTOM_WHEEL_BUTTON_ASSIGNMENTS_H
 
-enum{
+enum {
     button_0 = 0,
     button_1 = 1,
     button_2 = 2,
@@ -27,7 +27,7 @@ enum{
     rotary_1_ccw = 18,
     rotary_2_cw = 19,
     rotary_2_ccw = 20,
-
 }button_assignments;
+
 
 #endif //CUSTOM_WHEEL_BUTTON_ASSIGNMENTS_H

@@ -143,7 +143,7 @@ int main() {
 
     board_init();
     button_input_init();
-    //rotary_input_init();
+    rotary_input_init();
 
     uint32_t last_button_state;
     uint32_t button_state = 0xFF;
@@ -151,10 +151,11 @@ int main() {
 
     while (1)
     {
-        //int8_t rotary_data[3];
-        /*
+        int8_t rotary_data[3];
+
         if(rotary_input_check() != 0)
         {
+            button_state = 0;
             rotary_input_read(rotary_data);
             if(rotary_data[0] > 0)
             {
@@ -180,10 +181,10 @@ int main() {
             {
                 button_state |= ( 1 << rotary_2_ccw);
             }
-        }*/
+        }
 
         /* Read the state of the buttons. */
-        button_state = button_input_read_all();
+        //button_state |= button_input_read_all();
 
         if(last_button_state != button_state)
         {

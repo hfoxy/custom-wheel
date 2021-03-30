@@ -52,7 +52,7 @@ button_t button_temp[BUTTON_COUNT] = {
         [13].gpio_num = 13,
         [13].bit_index = rotary_button_1,
 
-        [14].gpio_num = 13,
+        [14].gpio_num = 14,
         [14].bit_index = rotary_button_2,
 };
 

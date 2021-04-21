@@ -147,7 +147,7 @@ int main() {
         uint8_t updated = 0;
         updated = Matrix_Read(&report.buttons_a);
 
-        updated += update_gpio(TOGGLE_01_A, &report.buttons_c, 17, 1);
+        /*updated += update_gpio(TOGGLE_01_A, &report.buttons_c, 17, 1);
         updated += update_gpio(TOGGLE_01_B, &report.buttons_c, 18, 2);
         updated += update_gpio(TOGGLE_02_A, &report.buttons_c, 19, 3);
         updated += update_gpio(TOGGLE_02_B, &report.buttons_c, 20, 4);
@@ -161,7 +161,7 @@ int main() {
         updated += update_gpio_with_pressed(rotary_gpio.gpio_a, rotary_gpio.report_btn, rotary_gpio.btn_idx, rotary_gpio.bit_idx, 0);
 
         rotary_gpio = rotary_gpios[ROTARY_03_C];
-        updated += update_gpio_with_pressed(rotary_gpio.gpio_a, rotary_gpio.report_btn, rotary_gpio.btn_idx, rotary_gpio.bit_idx, 0);
+        updated += update_gpio_with_pressed(rotary_gpio.gpio_a, rotary_gpio.report_btn, rotary_gpio.btn_idx, rotary_gpio.bit_idx, 0);*/
 
         if (updated > 0 || rotary_updated > 0) {
             rotary_updated = 0;

@@ -48,7 +48,7 @@ tusb_desc_device_t const desc_device =
                 .bDeviceProtocol    = 0x00,
                 .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
 
-                .idVendor           = 0xCafe,
+                .idVendor           = 0xF0F1,
                 .idProduct          = USB_PID,
                 .bcdDevice          = 0x0100,
 
@@ -78,10 +78,10 @@ uint8_t const *tud_descriptor_device_cb(void) {
     /* 16 bit Button Map */ \
     HID_USAGE_PAGE   ( HID_USAGE_PAGE_BUTTON                  ) ,\
     HID_USAGE_MIN    ( 1                                      ) ,\
-    HID_USAGE_MAX    ( 24                                     ) ,\
+    HID_USAGE_MAX    ( 32                                     ) ,\
     HID_LOGICAL_MIN  ( 0                                      ) ,\
     HID_LOGICAL_MAX  ( 1                                      ) ,\
-    HID_REPORT_COUNT ( 24                                     ) ,\
+    HID_REPORT_COUNT ( 32                                     ) ,\
     HID_REPORT_SIZE  ( 1                                      ) ,\
     HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
   HID_COLLECTION_END \
@@ -140,8 +140,8 @@ char const *string_desc_arr[] =
         {
                 (const char[]) {0x09, 0x04}, // 0: is supported language is English (0x0409)
                 "Harry Fox",                     // 1: Manufacturer
-                "3D Printed Wheel",              // 2: Product
-                "2345678",                        // 3: Serials, should use chip ID
+                "Fox Wheel",              // 2: Product
+                "0002",                        // 3: Serials, should use chip ID
         };
 
 static uint16_t _desc_str[32];

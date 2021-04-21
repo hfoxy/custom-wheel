@@ -108,7 +108,7 @@ void core1_entry()
             report_local.buttons_b = (uint8_t)((data_received >> 8) & 0xFF);
             report_local.buttons_c = (uint8_t)((data_received >> 16) & 0xFF);
             if (tud_hid_ready()) {
-                tud_hid_report(0, &report, sizeof(report));
+                tud_hid_report(0, &report_local, sizeof(report_local));
             }
         }
     }
@@ -142,10 +142,11 @@ int main() {
 
     board_init();
     Matrix_Initialise();
+    uint32_t report_data = 0;
 
     while (1) {
         uint8_t updated = 0;
-        updated = Matrix_Read(&report.buttons_a);
+        updated = Matrix_Read(&report_data);
 
         /*updated += update_gpio(TOGGLE_01_A, &report.buttons_c, 17, 1);
         updated += update_gpio(TOGGLE_01_B, &report.buttons_c, 18, 2);
@@ -165,9 +166,9 @@ int main() {
 
         if (updated > 0 || rotary_updated > 0) {
             rotary_updated = 0;
-            uint32_t report_send;
-            report_send = (report.buttons_a) | (report.buttons_b << 8) | (report.buttons_c << 16);
-            multicore_fifo_push_blocking(report_send);
+            //uint32_t report_send;
+            //report_send = (report.buttons_a) | (report.buttons_b << 8) | (report.buttons_c << 16);
+            multicore_fifo_push_blocking(report_data);
             //__breakpoint();
         }
     }

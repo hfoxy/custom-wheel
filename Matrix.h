@@ -6,7 +6,7 @@
 #define CUSTOM_WHEEL_MATRIX_H
 
 void Matrix_Initialise(void);
-uint8_t Matrix_Read(uint8_t *destination);
+uint8_t Matrix_Read(uint32_t *destination);
 
 
 #endif //CUSTOM_WHEEL_MATRIX_H

@@ -54,22 +54,22 @@ void Matrix_Initialise(void)
     ConfigureRows();
 }
 
-uint8_t Matrix_Read(uint8_t *destination)
+uint8_t Matrix_Read(uint32_t *destination)
 {
     gpio_put(rows[0], true);
-    *destination = ReadColumn();
+    *destination = (uint32_t)ReadColumn();
     gpio_put(rows[0], false);
 
-    gpio_put(rows[1], true);
-    *destination = ReadColumn() << 4;
-    gpio_put(rows[1], false);
-
-    gpio_put(rows[2], true);
-    destination[1] = ReadColumn();
-    gpio_put(rows[2], false);
-
-    gpio_put(rows[3], true);
-    destination[1] = ReadColumn() << 4;
-    gpio_put(rows[3], false);
+//    gpio_put(rows[1], true);
+//    *destination = ReadColumn() << 4;
+//    gpio_put(rows[1], false);
+//
+//    gpio_put(rows[2], true);
+//    destination[1] = ReadColumn();
+//    gpio_put(rows[2], false);
+//
+//    gpio_put(rows[3], true);
+//    destination[1] = ReadColumn() << 4;
+//    gpio_put(rows[3], false);
     return 1;
 }

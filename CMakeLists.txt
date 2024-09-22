@@ -1,36 +1,85 @@
-# Generated Cmake Pico project file
-
 cmake_minimum_required(VERSION 3.13)
+#
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
 
-set(PICO_SDK_FETCH_FROM_GIT 1)
+#
+# Set path to Pico-sdk
+#
+if (NOT PICO_SDK_PATH)
+    if(DEFINED ENV{PICO_SDK_PATH})
+        set(PICO_SDK_PATH $ENV{PICO_SDK_PATH})
+        message("Setting PICO_SDK_PATH from environment ('${PICO_SDK_PATH}')")
+    else()
+        set(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/pico-sdk)
+        message("Setting PICO_SDK_PATH from git submodule path ('${PICO_SDK_PATH}')")
+    endif()
+else()
+    message("PICO_SDK_PATH is ('${PICO_SDK_PATH}')")
+endif()
 
-# Pull in Raspberry Pi Pico SDK (must be before project)
-include(pico_sdk_import.cmake)
+#
+# Set path to TinyUSB
+#
+if (NOT PICO_TINYUSB_PATH)
+    if(DEFINED ENV{PICO_TINYUSB_PATH})
+        set(PICO_TINYUSB_PATH $ENV{PICO_TINYUSB_PATH})
+        message("Setting PICO_TINYUSB_PATH from environment ('${PICO_TINYUSB_PATH}')")
+    else()
+        set(PICO_TINYUSB_PATH ${CMAKE_CURRENT_LIST_DIR}/tinyusb)
+        message("Setting PICO_TINYUSB_PATH from git submodule path ('${PICO_TINYUSB_PATH}')")
+    endif()
+else()
+    message("PICO_TINYUSB_PATH is ('${PICO_TINYUSB_PATH}')")
+endif()
 
-project(fox-wheel C CXX ASM)
+#
+# Set path to Pico-PIO-USB
+#
+if (NOT PICO_PIO_USB_PATH)
+    if(DEFINED ENV{PICO_PIO_USB_PATH})
+        set(PICO_PIO_USB_PATH $ENV{PICO_PIO_USB_PATH})
+        message("Setting PICO_PIO_USB_PATH from environment ('${PICO_PIO_USB_PATH}')")
+    else()
+        set(PICO_PIO_USB_PATH ${PICO_TINYUSB_PATH}/hw/mcu/raspberry_pi/Pico-PIO-USB)
+        message("Setting PICO_PIO_USB_PATH from git submodule path ('${PICO_PIO_USB_PATH}')")
+    endif()
+else()
+    message("PICO_PIO_USB_PATH is ('${PICO_PIO_USB_PATH}')")
+endif()
 
-# include(example_auto_set_url.cmake)
+#
+# For TinyUSB
+#
+set(FAMILY rp2040)
 
-# Add executable. Default name is the project name, version 0.1
+#
+# Include pico_sdk_import.cmake from pico-sdk (instead of copying)
+#
+include(${PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-add_executable(fox-wheel fox-wheel.c usb_descriptors.c)
+#
+# Generic setup
+#
+set(PROJECT wheel)
+project(${PROJECT})
 
-# Add the standard library to the build
-target_link_libraries(fox-wheel pico_stdlib hardware_pio hardware_timer pico_multicore tinyusb_device tinyusb_board)
-
-# Initialise the Raspberry Pi Pico SDK
+#
+# Initialize Pico-SDK
+#
 pico_sdk_init()
 
-pico_set_program_name(fox-wheel "fox-wheel")
-pico_set_program_version(fox-wheel "4.0")
+#
+# Setup paths to Pico-PIO-USB
+#
+set(PICO_PIO_USB_SRC "${PICO_PIO_USB_PATH}/src")
+set(PICO_PIO_USB_EXAMPLES_PATH ${PICO_PIO_USB_PATH}/examples)
 
-pico_enable_stdio_uart(fox-wheel 0)
-pico_enable_stdio_usb(fox-wheel 0)
+#
+# Set the path to the source code to build
+#
+if (NOT SRC_TO_BUILD_PATH)
+    set(SRC_TO_BUILD_PATH ${PICO_PIO_USB_EXAMPLES_PATH}/host_hid_to_device_cdc)
+endif()
 
-pico_add_extra_outputs(fox-wheel)
-
-target_include_directories(fox-wheel PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-
+message("Building code from '${SRC_TO_BUILD_PATH}'")
+add_subdirectory(${SRC_TO_BUILD_PATH})
